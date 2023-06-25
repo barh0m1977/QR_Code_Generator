@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QR Code Generator</string>
+    <string name="title_home">الصفحة الرئيسية</string>
+    <string name="title_dashboard">الصفحة الرئيسية</string>
+    <string name="title_notifications">الاشعارات</string>
+    <string name="scan">مسح</string>
+    <string name="generate">توليد</string>
+    <string name="enter_value">ادخل القيمة</string>
+    <string name="theme">السمات</string>
+    <string name="color">اللون</string>
+    <string name="hello_blank_fragment">مرحبا</string>
+    <string name="shorten">اختصار</string>
+    <string name="short_link">اختصار الرابط</string>
+</resources>

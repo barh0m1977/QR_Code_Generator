@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "136197825927",
+    "project_id": "iml-all-projects",
+    "storage_bucket": "iml-all-projects.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136197825927:android:fd73e13c2090ce0d819f22",
+        "android_client_info": {
+          "package_name": "com.ibrahim.qrcodegenerator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "136197825927-5v679blir7regv6e44c0invhubapviqn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnn-1ITigKAMv1gG97uGx7NLn5Ac2ISyE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "136197825927-5v679blir7regv6e44c0invhubapviqn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136197825927:android:3beb3f26f2199fc4819f22",
+        "android_client_info": {
+          "package_name": "com.ibrahim.restaurants"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "136197825927-5v679blir7regv6e44c0invhubapviqn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnn-1ITigKAMv1gG97uGx7NLn5Ac2ISyE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "136197825927-5v679blir7regv6e44c0invhubapviqn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

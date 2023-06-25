@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#5980B7</color>
+    <color name="purple_500">#3D5481</color>
+    <color name="purple_700">#161B39</color>
+    <color name="teal_200">#5BDEE4</color>
+    <color name="teal_700">#91CBD5</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+
+        <color name="cyanea_primary_reference">#0288D1</color>
+        <color name="cyanea_accent_reference">#FFA000</color>
+
+</resources>
