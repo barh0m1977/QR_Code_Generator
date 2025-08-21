@@ -36,7 +36,5 @@ This app is not intended for use by children under the age of 13. We do not know
 We may update this policy occasionally. The effective date will be updated accordingly. Significant changes will be communicated via app updates or in-app notifications.
 
 8. Contact Us
-   lubbadibrahim0@gmail.com
-
 For questions about this policy or data usage, contact us at:
-[Your Email or Contact Address]
+ lubbadibrahim0@gmail.com
