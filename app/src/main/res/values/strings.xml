@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">QR Code Generator</string>
+    <string name="app_name">Qraft</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
@@ -8,7 +8,6 @@
     <string name="enter_value">Enter Value</string>
     <string name="theme">Theme</string>
     <string name="color">Color</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="shorten">Shorten</string>
     <string name="short_link">short_link</string>

@@ -12,4 +12,9 @@
         <color name="cyanea_primary_reference">#0288D1</color>
         <color name="cyanea_accent_reference">#FFA000</color>
 
+        <color name="pink">#fc688a</color>
+        <color name="skyBlue">#009492</color>
+        <color name="nutGreen">#77c536</color>
+
+
 </resources>

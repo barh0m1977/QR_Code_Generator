@@ -1,62 +1,103 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
     id 'com.google.gms.google-services'
 }
 
 android {
     namespace 'com.ibrahim.qrcodegenerator'
-    compileSdk 33
+    compileSdk 36 // 36 not officially released yet, use 35 stable
 
     defaultConfig {
         applicationId "com.ibrahim.qrcodegenerator"
         minSdk 24
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        targetSdk 36
+        versionCode 4
+        versionName "1.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
     buildFeatures {
         viewBinding true
+        compose true
+    }
+
+    composeOptions {
+        // Use Compose compiler that matches Kotlin 2.0.x
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
 
-
 dependencies {
+    // Core Android
+    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
 
-    implementation 'androidx.core:core-ktx:1.10.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
-    implementation 'com.google.firebase:firebase-analytics-ktx:21.2.2'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    testImplementation 'junit:junit:4.13.2'
+    // Lifecycle & Navigation
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.9.4'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.9.5'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.9.5'
+
+    // Firebase
+    implementation 'com.google.firebase:firebase-analytics-ktx:22.5.0'
+
+    // Compose (use BOM to manage versions automatically)
+    implementation platform('androidx.compose:compose-bom:2025.10.01')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.material3:material3'
+    implementation "com.google.android.material:material:1.11.0"
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    implementation "androidx.activity:activity-compose:1.9.3"
+    implementation "androidx.compose.material:material-icons-extended"
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+
+    // Other libs
     implementation 'com.github.androidmads:QRGenerator:1.0.1'
     implementation 'com.github.yuriy-budiyev:code-scanner:2.3.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation 'com.google.android.gms:play-services-ads:22.0.0'
-    implementation 'com.android.volley:volley:1.2.1'
     implementation 'com.github.zaferertas:simplecolorpicker:1.1'
     implementation 'com.squareup.picasso:picasso:2.8'
+    implementation 'com.android.volley:volley:1.2.1'
+    implementation 'com.google.android.gms:play-services-ads:24.7.0'
+    // CameraX
+    implementation "com.google.zxing:core:3.5.3"
+    implementation "androidx.camera:camera-core:1.5.1"
+    implementation "androidx.camera:camera-camera2:1.5.1"
+    implementation "androidx.camera:camera-lifecycle:1.5.1"
+    implementation "androidx.camera:camera-view:1.5.1"
+    implementation "androidx.camera:camera-extensions:1.5.1"
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }

@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -38,8 +39,7 @@ class ShortUrlFragment : Fragment() {
         }
 
         binding.shortenText.setOnClickListener {
-            if (binding.shortenText.text != null && binding.shortenText.text!="______________") {
-
+            if (binding.shortenText.text != null) {
                 val clipboard: ClipboardManager? =
                     requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager?
                 val clip: ClipData =
@@ -51,34 +51,39 @@ class ShortUrlFragment : Fragment() {
 
 
         //ads
-        adView = binding.adView
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-
-        binding.adView.adListener = object : AdListener() {
-            override fun onAdClicked() {
-                super.onAdClicked()
-                Toast.makeText(requireContext(), "clicked", Toast.LENGTH_SHORT).show()
-            }
-        }
+//        adView = binding.adView
+//        val adRequest = AdRequest.Builder().build()
+//        adView.loadAd(adRequest)
+//
+//        binding.adView.adListener = object : AdListener() {
+//            override fun onAdClicked() {
+//                super.onAdClicked()
+//                Toast.makeText(requireContext(), "clicked", Toast.LENGTH_SHORT).show()
+//            }
+//        }
 
         return binding.root
     }
 
     private fun shortenUrl(text: String) {
-        val url = "https://api.shrtco.de/v2/shorten?url=$text"
+        // API endpoint (simple mode → returns plain text short URL)
+        val url = "https://is.gd/create.php?format=simple&url=$text"
+
         val queue = Volley.newRequestQueue(requireContext())
 
-        val request = JsonObjectRequest(Request.Method.GET, url, null, { res ->
-            Log.e("bml", res.getJSONObject("result").toString())
-            binding.shortenText.setText(
-                res.getJSONObject("result").getString("full_short_link").toString()
-            )
-        }, { error ->
-            Log.e("bml", error.message.toString())
-        })
-        queue.add(request)
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                // response IS the shortened URL (plain text)
+                Log.e("bml", response)
+                binding.shortenText.text = response
+            },
+            { error ->
+                Log.e("bml", error.message ?: "Unknown error")
+            }
+        )
 
+        queue.add(request)
     }
 
 }
