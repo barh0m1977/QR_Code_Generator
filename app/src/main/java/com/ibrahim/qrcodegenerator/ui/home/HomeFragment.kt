@@ -18,6 +18,8 @@ import com.ibrahim.qrcodegenerator.KqrKits
 import com.ibrahim.qrcodegenerator.R
 import com.ibrahim.qrcodegenerator.databinding.FragmentHomeBinding
 import androidx.core.graphics.toColorInt
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import com.ibrahim.qrcodegenerator.ui.ComposeStyleBottomSheet
 import java.io.IOException
 
 class HomeFragment : Fragment() {
@@ -36,34 +38,14 @@ class HomeFragment : Fragment() {
 
         val logo = BitmapFactory.decodeResource(resources, R.drawable.qr_code)
 
-//        binding.button.setOnClickListener {
-//            val qrText = binding.text.text?.toString()?.trim()
-//            if (qrText.isNullOrEmpty()) {
-//                Toast.makeText(requireContext(), "Please enter text or URL", Toast.LENGTH_SHORT).show()
-//                return@setOnClickListener
-//            }
-//
-//            val qr = KqrKits.generate(
-//                text = qrText,
-//                size = 1024,
-//                fgColor = color.toColorInt(),
-//                bgColor = Color.WHITE,
-//                body = "circle",
-//                eye = "square",
-//                logo = logo
-//            )
-//
-//            bitmap = qr
-//            binding.imageView.setImageBitmap(qr)
-//            binding.imageView.visibility = View.VISIBLE
-//        }
 
         binding.button.setOnClickListener {
             val bottomSheet = ComposeStyleBottomSheet { fg, bg, eye, body, logoUri ->
                 color = fg
                 val qrText = binding.text.text?.toString()?.trim()
                 if (qrText.isNullOrEmpty()) {
-                    Toast.makeText(requireContext(), "Please enter text or URL", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Please enter text or URL", Toast.LENGTH_SHORT)
+                        .show()
                     return@ComposeStyleBottomSheet
                 }
                 val logoBitmap = logoUri?.let {
@@ -80,7 +62,7 @@ class HomeFragment : Fragment() {
                     body = body.lowercase(),
                     bodyScale = 0.85f,
                     logo = logoBitmap,
-                    errorCorrection = com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.H
+                    errorCorrection = ErrorCorrectionLevel.H
                 )
 
                 bitmap = qr

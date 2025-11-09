@@ -5,8 +5,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.ImageFormat
+import android.media.Image
 import android.os.Bundle
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,12 +22,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.NotFoundException
-import com.google.zxing.PlanarYUVLuminanceSource
+import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import com.ibrahim.qrcodegenerator.databinding.FragmentDashboardBinding
+import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -36,9 +35,11 @@ class DashboardFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var cameraExecutor: ExecutorService
-    private val PERMISSION_REQUEST_CODE = 200
-
     private val multiFormatReader = MultiFormatReader()
+
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 200
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,7 +48,11 @@ class DashboardFragment : Fragment() {
     ): View {
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         cameraExecutor = Executors.newSingleThreadExecutor()
-
+        val hints = mapOf(
+            com.google.zxing.DecodeHintType.TRY_HARDER to true,
+            com.google.zxing.DecodeHintType.POSSIBLE_FORMATS to listOf(com.google.zxing.BarcodeFormat.QR_CODE)
+        )
+        multiFormatReader.setHints(hints)
         if (isCameraPermissionGranted()) {
             startCamera()
         } else {
@@ -62,11 +67,12 @@ class DashboardFragment : Fragment() {
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
 
-            val preview = Preview.Builder()
-                .build()
-                .also { it.setSurfaceProvider(binding.scannerView.surfaceProvider) }
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(binding.scannerView.surfaceProvider)
+            }
 
             val imageAnalysis = ImageAnalysis.Builder()
+                .setTargetResolution(Size(1280, 720))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
@@ -74,74 +80,47 @@ class DashboardFragment : Fragment() {
                 scanImageProxy(imageProxy)
             }
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
                     viewLifecycleOwner,
-                    cameraSelector,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
                     imageAnalysis
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(
-                    requireContext(),
-                    "Camera initialization failed: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Camera start failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     @OptIn(ExperimentalGetImage::class)
     private fun scanImageProxy(imageProxy: ImageProxy) {
-        val mediaImage = imageProxy.image ?: run {
-            imageProxy.close()
-            return
-        }
-
-        if (mediaImage.format != ImageFormat.YUV_420_888) {
-            imageProxy.close()
-            return
-        }
-
-        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-
-        val yPlane = mediaImage.planes[0]
-        val yBuffer = yPlane.buffer
-        val yBytes = ByteArray(yBuffer.remaining())
-        yBuffer.get(yBytes)
-
-        // *** THE FIX IS HERE ***
-        // Use rowStride for dataWidth to account for memory padding.
-        // Use mediaImage.width and mediaImage.height for the crop rectangle.
-        val source = PlanarYUVLuminanceSource(
-            yBytes,
-            yPlane.rowStride, // Use rowStride here
-            mediaImage.height,
-            0,
-            0,
-            mediaImage.width,   // The actual crop width
-            mediaImage.height,  // The actual crop height
-            false
-        )
-
-        // The LuminanceSource now accurately represents the unrotated image data.
-        // Now, we create a BinaryBitmap from it.
-        // We can then use the built-in rotation methods if necessary.
-        val bitmap = BinaryBitmap(HybridBinarizer(source))
+        val mediaImage = imageProxy.image ?: return imageProxy.close()
 
         try {
-            // We need to rotate the bitmap for ZXing, not the source.
-            val result = if (rotationDegrees == 90 || rotationDegrees == 270) {
-                multiFormatReader.decode(bitmap.rotateCounterClockwise())
-            } else {
-                multiFormatReader.decode(bitmap)
-            }
+            val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+            val nv21 = yuv420ToNv21(mediaImage)
+            val rotated = rotateNV21(nv21, mediaImage.width, mediaImage.height, rotationDegrees)
 
-            // If a result is found, update the UI
+            val width = if (rotationDegrees == 90 || rotationDegrees == 270) mediaImage.height else mediaImage.width
+            val height = if (rotationDegrees == 90 || rotationDegrees == 270) mediaImage.width else mediaImage.height
+
+            val source = PlanarYUVLuminanceSource(
+                rotated,
+                width,
+                height,
+                0,
+                0,
+                width,
+                height,
+                false
+            )
+
+            val bitmap = BinaryBitmap(HybridBinarizer(source))
+            val result = multiFormatReader.decode(bitmap)
+
             activity?.runOnUiThread {
                 binding.text.apply {
                     visibility = View.VISIBLE
@@ -149,34 +128,69 @@ class DashboardFragment : Fragment() {
                     setOnClickListener { copyToClipboard(result.text) }
                 }
             }
-
-        } catch (e: NotFoundException) {
-            // QR code not found in this frame, this is normal. Ignore.
+        } catch (_: NotFoundException) {
+            // normal when no QR is found
         } catch (e: Exception) {
-            // Log other potential exceptions during decoding
             e.printStackTrace()
         } finally {
-            // ALWAYS close the ImageProxy and reset the reader.
             imageProxy.close()
             multiFormatReader.reset()
         }
     }
 
+    private fun yuv420ToNv21(image: Image): ByteArray {
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
 
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + uSize + vSize)
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+        return nv21
+    }
+
+    private fun rotateNV21(data: ByteArray, width: Int, height: Int, rotation: Int): ByteArray {
+        return when (rotation) {
+            90 -> {
+                val rotated = ByteArray(data.size)
+                var i = 0
+                for (x in 0 until width) {
+                    for (y in height - 1 downTo 0) {
+                        rotated[i++] = data[y * width + x]
+                    }
+                }
+                rotated
+            }
+            180 -> data.reversedArray()
+            270 -> {
+                val rotated = ByteArray(data.size)
+                var i = 0
+                for (x in width - 1 downTo 0) {
+                    for (y in 0 until height) {
+                        rotated[i++] = data[y * width + x]
+                    }
+                }
+                rotated
+            }
+            else -> data
+        }
+    }
 
     private fun copyToClipboard(text: String) {
-        val clipboard =
-            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("QR Code", text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(requireContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show()
     }
 
-    private fun isCameraPermissionGranted(): Boolean =
-        ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
+    private fun isCameraPermissionGranted() = ContextCompat.checkSelfPermission(
+        requireContext(), Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 
     private fun requestCameraPermission() {
         ActivityCompat.requestPermissions(
@@ -186,23 +200,13 @@ class DashboardFragment : Fragment() {
         )
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startCamera()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Camera permission is required to scan QR codes.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.isNotEmpty()
+            && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            startCamera()
         } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+            Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_LONG).show()
         }
     }
 

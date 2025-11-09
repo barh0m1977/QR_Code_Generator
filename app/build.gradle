@@ -13,8 +13,8 @@ android {
         applicationId "com.ibrahim.qrcodegenerator"
         minSdk 24
         targetSdk 36
-        versionCode 4
-        versionName "1.3"
+        versionCode 5
+        versionName "2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -82,12 +82,12 @@ dependencies {
 
 
     // Other libs
-    implementation 'com.github.androidmads:QRGenerator:1.0.1'
-    implementation 'com.github.yuriy-budiyev:code-scanner:2.3.2'
-    implementation 'com.github.zaferertas:simplecolorpicker:1.1'
     implementation 'com.squareup.picasso:picasso:2.8'
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'com.google.android.gms:play-services-ads:24.7.0'
+    implementation 'com.google.android.play:app-update:2.1.0'
+    implementation 'com.google.android.play:app-update-ktx:2.1.0'
+
     // CameraX
     implementation "com.google.zxing:core:3.5.3"
     implementation "androidx.camera:camera-core:1.5.1"
